@@ -15,7 +15,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login_page/>} />
       <Route path="/dashboard" element={<DashboardPage/>} />
-      <Route path="/projectDetail" element={<ProjectDetailPage/>} />
+      <Route path="/projectDetail/:id" element={<ProjectDetailPage/>} /> {/* <-- Fix here */}
 
     </Routes>
     </>

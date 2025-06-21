@@ -21,16 +21,6 @@ let handle_change = (e)=> {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Backend API call example (commented)
-    // axios.post('/api/projects', newProject)
-    //   .then(res => {
-    //     onCreate(res.data);
-    //   })
-    //   .catch(err => {
-    //     setFormError('Failed to create project');
-    //   });
-
-    // Add new project locally for frontend testing
    onCreate(card);
   setCard({
   name: "",

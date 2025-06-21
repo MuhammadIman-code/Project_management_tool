@@ -1,11 +1,11 @@
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams,  useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import TaskForm from "../components/TaskForm";
 import TaskCard from "../components/TaskCard";
+import axios from "axios";
 
 export default function ProjectDetailPage() {
     const { id } = useParams();
-    const { state } = useLocation();
     const navigate = useNavigate();
 
     const [currentUser] = useState("user123");
@@ -17,57 +17,39 @@ export default function ProjectDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // First try to get project from state
-        if (state?.project) {
-            setProject(state.project);
-            loadTasks(state.project.id);
-            setIsLoading(false);
-        } else {
-            // Fallback: Try to load project by ID if state is lost
-            loadProjectById(id);
-        }
-    }, [id, state]);
+        const fetchProjectAndTasks = async () => {
+            setIsLoading(true);
+            try {
+                const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+                // Fetch project details
+                const projectRes = await axios.get(
+                    `http://127.0.0.1:8000/api/projects/${id}/`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                setProject(projectRes.data);
 
-    const loadProjectById = (projectId) => {
-        // In a real app, this would be an API call
-        // Here we simulate loading with dummy data
-        setTimeout(() => {
-            const dummyProject = {
-                id: projectId,
-                name: `Project ${projectId}`,
-                description: `Description for project ${projectId}`,
-                verified: true
-            };
-            setProject(dummyProject);
-            loadTasks(projectId);
-            setIsLoading(false);
-        }, 500);
-    };
-
-    const loadTasks = (projectId) => {
-        // Example: fake tasks for this specific project
-        const dummyTasks = [
-            {
-                id: 1,
-                title: "Header UI",
-                description: "Design new header components",
-                status: "pending",
-                projectId: projectId,
-                createdBy: "user123",
-                created_at: "2023-05-15T10:00:00Z"
-            },
-            {
-                id: 2,
-                title: "Login page",
-                description: "Update login form validation",
-                status: "in progress",
-                projectId: projectId,
-                createdBy: "user456",
-                created_at: "2023-05-16T11:30:00Z"
+                // Fetch tasks for this project
+                try {
+                    const tasksRes = await axios.get(
+                        `http://127.0.0.1:8000/api/projects/${id}/tasks/`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    setTasks(tasksRes.data);
+                } catch (taskError) {
+                    setTasks([]);
+                    console.log(taskError)// Optionally log taskError
+                }
+            } catch (error) {
+                setProject(null);
+                setTasks([]);
+                console.error("Error fetching project or tasks:", error);
+            } finally {
+                setIsLoading(false);
             }
-        ];
-        setTasks(dummyTasks.filter(task => task.projectId === projectId));
-    };
+        };
+
+        fetchProjectAndTasks();
+    }, [id]);
 
     const filteredTasks = filter === "all" ? tasks : tasks.filter(t => t.status === filter);
     const canModifyTask = task => task.createdBy === currentUser;

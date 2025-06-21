@@ -107,17 +107,17 @@ class ProjectCreateView(APIView):
  
     def get(self, request, project_id=None):
         if project_id:
-         try:
-            project = Project.objects.get(id=project_id)
-            if project.owner == request.user or project.verified:
-                serializer = ProjectSerializer(project)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({'detail': 'Not authorized to view this project.'},
-                                status=status.HTTP_403_FORBIDDEN)
-         except Project.DoesNotExist:
-            return Response({'detail': 'Project not found.'},
-                            status=status.HTTP_404_NOT_FOUND)
+            try:
+                project = Project.objects.get(id=project_id)
+                if project.owner == request.user or project.verified:
+                    serializer = ProjectSerializer(project)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response({'detail': 'Not authorized to view this project.'},
+                                    status=status.HTTP_403_FORBIDDEN)
+            except Project.DoesNotExist:
+                return Response({'detail': 'Project not found.'},
+                                status=status.HTTP_404_NOT_FOUND)
         else:
             own_projects = Project.objects.filter(owner=request.user)
             other_verified_projects = Project.objects.filter(verified=True).exclude(owner=request.user)
